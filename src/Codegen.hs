@@ -130,14 +130,22 @@ emptyBlock i = BlockState i [] Nothing
 emptyCodegen :: CodegenState
 emptyCodegen = CodegenState (Name entryBlockName) Map.empty [] 1 0 Map.empty
 
-execCodegen :: Codegen a -> CodegenState
-execCodegen m = execState (runCodegen m) emptyCodegen
+execCodegen :: [(String, Operand)] -> Codegen a -> CodegenState
+execCodegen vars m = execState (runCodegen m) emptyCodegen { symtab = vars }
 
 fresh :: Codegen Word
 fresh = do
   i <- gets count
   modify $ \s -> s { count = 1 + i }
   return $ i + 1
+
+current :: Codegen BlockState
+current = do
+  c <- gets currentBlock
+  blks <- gets blocks
+  case Map.lookup c blks of
+    Just x -> return x
+    Nothing -> error $ "No such block: " ++ show c
 
 instr :: Instruction -> Codegen (Operand)
 instr ins = do
@@ -153,6 +161,14 @@ terminator trm = do
   blk <- current
   modifyBlock (blk { term = Just trm })
   return trm
+
+named :: String -> Codegen a -> Codegen Operand
+named iname m = m >> do
+  blk <- current
+  let b = Name iname
+      (_ := x) = last (stack blk)
+  modifyBlock $ blk { stack = init (stack blk) ++ [b := x] }
+  return $ local b
 
 -------------------------------------------------------------------------------
 -- Block Stack
@@ -188,14 +204,6 @@ modifyBlock :: BlockState -> Codegen ()
 modifyBlock new = do
   active <- gets currentBlock
   modify $ \s -> s { blocks = Map.insert active new (blocks s) }
-
-current :: Codegen BlockState
-current = do
-  c <- gets currentBlock
-  blks <- gets blocks
-  case Map.lookup c blks of
-    Just x -> return x
-    Nothing -> error $ "No such block: " ++ show c
 
 -------------------------------------------------------------------------------
 -- Symbol Table
@@ -269,6 +277,9 @@ br val = terminator $ Do $ Br val []
 
 cbr :: Operand -> Name -> Name -> Codegen (Named Terminator)
 cbr cond tr fl = terminator $ Do $ CondBr cond tr fl []
+
+phi :: Type -> [(Operand, Name)] -> Codegen Operand
+phi ty incoming = instr $ Phi ty incoming []
 
 ret :: Operand -> Codegen (Named Terminator)
 ret val = terminator $ Do $ Ret (Just val) []
