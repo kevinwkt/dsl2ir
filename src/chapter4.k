@@ -1,4 +1,4 @@
-var xxx = 3;
+var x = 3;
 
 def testfunc(x y) x + y*2;
 testfunc(4, 10);

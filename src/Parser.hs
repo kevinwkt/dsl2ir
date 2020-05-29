@@ -86,6 +86,14 @@ for = do
   body <- expr
   return $ For var start cond step body
 
+while :: Parser Expr
+while = do
+  reserved "while"
+  cond <- expr
+  reserved "in"
+  body <- expr
+  return $ While cond body
+  
 letins :: Parser Expr
 letins = do
   reserved "var"
@@ -125,6 +133,7 @@ factor = try floating
       <|> ifthen
       <|> try letins
       <|> for
+      <|> while
       <|> (parens expr)
 
 defn :: Parser Expr

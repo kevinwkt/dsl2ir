@@ -169,6 +169,33 @@ cgen (S.For ivar start cond step body) = do
   setBlock forexit
   return zero
 
+cgen (S.While cond body) = do
+  whilecond <- addBlock "while.cond"
+  whileloop <- addBlock "while.loop"
+  whileexit <- addBlock "while.exit"
+
+  -- %entry
+  ------------------
+  br whilecond
+
+  -- while.cond
+  ------------------
+  setBlock whilecond
+  cond <- cgen cond              -- Generate the loop condition
+  test <- fcmp FP.ONE false cond -- Test if the loop condition is True ( 1.0 )
+  cbr test whileloop whileexit   -- Generate the loop condition
+
+  -- while.loop
+  ------------------
+  setBlock whileloop
+  cgen body
+  br whilecond
+
+  -- while.exit
+  ------------------
+  setBlock whileexit
+  return zero
+
 -------------------------------------------------------------------------------
 -- Compilation
 -------------------------------------------------------------------------------

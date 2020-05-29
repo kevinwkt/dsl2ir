@@ -18,5 +18,16 @@ def fibi(x)
     b = c) :
   b;
 
+def testing(x)
+  var y = x, z = 0 in
+  (for i = 0, i < 0, 1.0 in
+    y = (y + 1) ) :
+  y;
+
+def newtest(x)
+  (while (x < 10) in
+    x = (x + 1)) :
+  x;
+
 # Call it. 
-fibi(10);
+newtest(1);
