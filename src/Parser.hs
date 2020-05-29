@@ -19,7 +19,7 @@ floating = Float <$> float
 binop = Ex.Infix (BinaryOp <$> op) Ex.AssocLeft
 unop = Ex.Prefix (UnaryOp <$> op)
 
-binary s assoc = Ex.Infix (reservedOp s >> return (BinaryOp s)) assoc
+binary s = Ex.Infix (reservedOp s >> return (BinaryOp s))
 
 op :: Parser String
 op = do

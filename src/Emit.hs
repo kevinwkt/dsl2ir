@@ -33,20 +33,20 @@ toSig :: [String] -> [(AST.Type, AST.Name)]
 toSig = map (\x -> (double, AST.Name x))
 
 codegenTop :: S.Expr -> LLVM ()
-codegenTop (S.Function name args body) = do
+codegenTop (S.Function name args body) =
   define double name largs bls
   where
     largs = map (\x -> (double, AST.Name x)) args
     bls = createBlocks $ execCodegen [] $ do
       entry <- addBlock entryBlockName
       setBlock entry
-      forM args $ \a -> do
+      forM_ args $ \a -> do
         var <- alloca double
         store var (local (AST.Name a))
         assign a var
       cgen body >>= ret
 
-codegenTop (S.Extern name args) = do
+codegenTop (S.Extern name args) =
   external double name fnargs
   where fnargs = toSig args
 
@@ -56,7 +56,7 @@ codegenTop (S.BinaryDef name args body) =
 codegenTop (S.UnaryDef name args body) =
   codegenTop $ S.Function ("unary" ++ name) args body
 
-codegenTop exp = do
+codegenTop exp =
   define double "main" [] bls
   where
     bls = createBlocks $ execCodegen [] $ do
@@ -82,8 +82,7 @@ binops = Map.fromList [
   ]
 
 cgen :: S.Expr -> Codegen AST.Operand
-cgen (S.UnaryOp op a) = do
-  cgen $ S.Call ("unary" ++ op) [a]
+cgen (S.UnaryOp op a) = cgen $ S.Call ("unary" ++ op) [a]
 cgen (S.Let a b c) = do
   i <- alloca double
   val <- cgen b
@@ -95,13 +94,14 @@ cgen (S.BinaryOp "=" (S.Var var) val) = do
   cval <- cgen val
   store a cval
   return cval
-cgen (S.BinaryOp op a b) = do
+cgen (S.BinaryOp op a b) =
   case Map.lookup op binops of
     Just f  -> do
       ca <- cgen a
       cb <- cgen b
       f ca cb
     Nothing -> cgen (S.Call ("binary" ++ op) [a,b])
+
 cgen (S.Var x) = getvar x >>= load
 cgen (S.Int n) = return $ cons $ C.Float (F.Double (fromIntegral n))
 cgen (S.Float n) = return $ cons $ C.Float (F.Double n)
