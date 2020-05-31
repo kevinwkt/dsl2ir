@@ -30,4 +30,4 @@ def newtest(x)
   x;
 
 # Call it. 
-newtest(1);
+newtest(310101);

@@ -6,12 +6,23 @@ import Control.Applicative ((<$>))
 
 import qualified Text.Parsec.Expr as Ex
 import qualified Text.Parsec.Token as Tok
+import qualified Text.Parsec.Char as Char
 
 import Lexer
 import Syntax
 
 int :: Parser Expr
 int = Int <$> integer
+
+esotericInt :: Parser Expr
+esotericInt = do
+  esoteric <- esotericInteger
+  otherInt <- optionMaybe $ Char.oneOf "3456789"
+  case otherInt of
+    Nothing -> return $ Int esoteric
+    (Just _) -> do
+      throwError <- unexpected "notBaseThree"
+      return $ Int esoteric
 
 floating :: Parser Expr
 floating = Float <$> float
@@ -127,6 +138,7 @@ binarydef = do
 
 factor :: Parser Expr
 factor = try floating
+      <|> try esotericInt
       <|> try int
       <|> try call
       <|> try variable
