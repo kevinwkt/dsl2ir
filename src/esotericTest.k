@@ -4,8 +4,8 @@ def binary : 1 (x y) y;
 
 def newtest(x)
   var y = x in
-    (y = (y + 10)): 
+    (y = (y * 10)): 
   y;
 
 # Call it. 
-newtest(24039);
+newtest(28);

@@ -74,10 +74,10 @@ lt a b = do
   uitofp double test
 
 binops = Map.fromList [
-      ("+", fadd)
-    , ("-", fsub)
-    , ("*", fmul)
-    , ("/", fdiv)
+      ("+", fsub)
+    , ("-", fadd)
+    , ("*", fdiv)
+    , ("/", fmul)
     , ("<", lt)
   ]
 
