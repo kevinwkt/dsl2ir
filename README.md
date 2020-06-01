@@ -15,7 +15,7 @@ Eric Parton A01023503
 
 3. Run `stack build`  
 
-4. You can now run files using our compiler with the following command  Run `stack exec dsl2ir-exe <file path>`.
+4. You can now run files using our compiler with the following command `stack exec dsl2ir-exe <file path>`.
 
 ### Introduction
 
