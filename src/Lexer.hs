@@ -14,8 +14,8 @@ import qualified Text.Parsec.Token as Tok
 lexer :: Tok.TokenParser ()
 lexer = Tok.makeTokenParser style
   where
-    ops = ["+","*","-","/",";","=",",","<",">","|",":"]
-    names = ["def","extern","if","then","else","in","for"
+    ops = ["+","*","-","/",";","=",",","<",">","|",":", "==", "!=", ">=", "<="]
+    names = [".","extern","if","then","else","in","for"
             ,"binary", "unary", "var", "while"
             ]
     style = emptyDef {
