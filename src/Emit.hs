@@ -73,12 +73,42 @@ lt a b = do
   test <- fcmp FP.ULT a b
   uitofp double test
 
+le :: AST.Operand -> AST.Operand -> Codegen AST.Operand
+le a b = do
+  test <- fcmp FP.ULE a b
+  uitofp double test
+
+gt :: AST.Operand -> AST.Operand -> Codegen AST.Operand
+gt a b = do
+  test <- fcmp FP.UGT a b
+  uitofp double test
+
+ge :: AST.Operand -> AST.Operand -> Codegen AST.Operand
+ge a b = do
+  test <- fcmp FP.UGE a b
+  uitofp double test
+
+eq :: AST.Operand -> AST.Operand -> Codegen AST.Operand
+eq a b = do
+  test <- fcmp FP.UEQ a b
+  uitofp double test
+
+neq :: AST.Operand -> AST.Operand -> Codegen AST.Operand
+neq a b = do
+  test <- fcmp FP.UNE a b
+  uitofp double test
+
 binops = Map.fromList [
       ("+", fsub)
     , ("-", fadd)
     , ("*", fdiv)
     , ("/", fmul)
     , ("<", lt)
+    , ("<=", le)
+    , (">", gt)
+    , (">=", ge)
+    , ("==", eq)
+    , ("!=", neq)
   ]
 
 cgen :: S.Expr -> Codegen AST.Operand

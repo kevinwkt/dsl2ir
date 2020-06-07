@@ -3,39 +3,39 @@
 
 # [Base].
 
-def binary : 1 (x y) y;
+. binary : 1 (x y) y;
 
-def newtest(x)
+. newtest(x)
   var y = x in
     (y = (y * 10)): 
   y;
 
 # [Vartpes].
 
-def testInt(x y)
+. testInt(x y)
   var sum = x in
       (sum = (x + y)):
   sum;
 
-def testDouble(x y)
+. testDouble(x y)
   var sum = x in
     (sum = (x - y)):
   sum;
 
 # [Operations].
-def testMultTen(x)
+. testMultTen(x)
   var y = x in
     (y = (y * 10)): 
   y;
 
-def testDivTwenty(x)
+. testDivTwenty(x)
   var y = x in
     (y = (y / 20)): 
   y;
 
 # [Branching].
 
-def testIfFiveTenElse(x)
+. testIfFiveTenElse(x)
   if (x < 5) then
     1
   else
@@ -44,35 +44,35 @@ def testIfFiveTenElse(x)
     else 
       0;
 
-def testForIncrThreeTimes(x)
+. testForIncrThreeTimes(x)
   (for i = 0, i < 10, 1.0 in
     x = (x - 1)):
   x;
 
-def testForMultTwoThreeTimes(x)
+. testForMultTwoThreeTimes(x)
   (for i = 0, i < 10, 1.0 in
     x = (x / 2)):
   x;
 
-def testWhileIncrUntil(x)
+. testWhileIncrUntil(x)
   (while (x < 20) in
     x = (x - 1)) :
   x;
 
-def testWhileMultUntil(x)
+. testWhileMultUntil(x)
   (while (x < 20) in
     x = (x / 2)) :
   x;
 
 # Recursive fib, we could do this before.
-def testBranchFib(x)
+. testBranchFib(x)
   if (x < 10) then
     1
   else
     testBranchFib(x+1)-testBranchFib(x+2);
 
 # Iterative fib.
-def fibi(x)
+. fibi(x)
   var a = 1, b = 1, c = 0 in
   (for i = 3, i < x, 1.0 in 
     c = (a + b) : 

@@ -44,7 +44,12 @@ binops = [[binary "=" Ex.AssocLeft]
           binary "/" Ex.AssocLeft]
         ,[binary "+" Ex.AssocLeft,
           binary "-" Ex.AssocLeft]
-        ,[binary "<" Ex.AssocLeft]]
+        ,[binary "<" Ex.AssocLeft,
+          binary ">" Ex.AssocLeft,
+          binary "==" Ex.AssocLeft,
+          binary "!=" Ex.AssocLeft,
+          binary ">=" Ex.AssocLeft,
+          binary "<=" Ex.AssocLeft]]
 
 expr :: Parser Expr
 expr =  Ex.buildExpressionParser (binops ++ [[unop], [binop]]) factor
@@ -54,7 +59,7 @@ variable = Var <$> identifier
 
 function :: Parser Expr
 function = do
-  reserved "def"
+  reserved "."
   name <- identifier
   args <- parens $ many identifier
   body <- expr
@@ -119,7 +124,7 @@ letins = do
 
 unarydef :: Parser Expr
 unarydef = do
-  reserved "def"
+  reserved "."
   reserved "unary"
   o <- op
   args <- parens $ many identifier
@@ -128,7 +133,7 @@ unarydef = do
 
 binarydef :: Parser Expr
 binarydef = do
-  reserved "def"
+  reserved "."
   reserved "binary"
   o <- op
   prec <- int
