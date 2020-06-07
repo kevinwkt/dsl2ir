@@ -146,7 +146,7 @@ factor = try floating
       <|> try letins
       <|> for
       <|> while
-      <|> (parens expr)
+      <|> parens expr
 
 defn :: Parser Expr
 defn = try extern
@@ -156,11 +156,11 @@ defn = try extern
     <|> expr
 
 contents :: Parser a -> Parser a
-contents p = do
+contents parser = do
   Tok.whiteSpace lexer
-  r <- p
+  rParser <- parser
   eof
-  return r
+  return rParser
 
 toplevel :: Parser [Expr]
 toplevel = many $ do
@@ -169,7 +169,7 @@ toplevel = many $ do
     return def
 
 parseExpr :: String -> Either ParseError Expr
-parseExpr s = parse (contents expr) "<stdin>" s
+parseExpr = parse (contents expr) "<stdin>"
 
 parseToplevel :: String -> Either ParseError [Expr]
-parseToplevel s = parse (contents toplevel) "<stdin>" s
+parseToplevel = parse (contents toplevel) "<stdin>"

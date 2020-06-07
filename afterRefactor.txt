@@ -1,0 +1,259 @@
+; ModuleID = 'dsl2ir jit'
+source_filename = "<string>"
+
+; Function Attrs: norecurse nounwind readnone
+define double @"binary:"(double %x, double returned %y) local_unnamed_addr #0 {
+entry:
+  ret double %y
+}
+
+; Function Attrs: norecurse nounwind readnone
+define double @newtest(double %x) local_unnamed_addr #0 {
+entry:
+  %0 = fdiv double %x, 3.000000e+00
+  %1 = tail call double @"binary:"(double undef, double %0)
+  ret double %1
+}
+
+; Function Attrs: norecurse nounwind readnone
+define double @testInt(double %x, double %y) local_unnamed_addr #0 {
+entry:
+  %0 = fsub double %x, %y
+  %1 = tail call double @"binary:"(double undef, double %0)
+  ret double %1
+}
+
+; Function Attrs: norecurse nounwind readnone
+define double @testDouble(double %x, double %y) local_unnamed_addr #0 {
+entry:
+  %0 = fadd double %x, %y
+  %1 = tail call double @"binary:"(double undef, double %0)
+  ret double %1
+}
+
+; Function Attrs: norecurse nounwind readnone
+define double @testMultTen(double %x) local_unnamed_addr #0 {
+entry:
+  %0 = fdiv double %x, 3.000000e+00
+  %1 = tail call double @"binary:"(double undef, double %0)
+  ret double %1
+}
+
+; Function Attrs: norecurse nounwind readnone
+define double @testDivTwenty(double %x) local_unnamed_addr #0 {
+entry:
+  %0 = fmul double %x, 6.000000e+00
+  %1 = tail call double @"binary:"(double undef, double %0)
+  ret double %1
+}
+
+; Function Attrs: norecurse nounwind readnone
+define double @testIfFiveTenElse(double %x) local_unnamed_addr #0 {
+entry:
+  %0 = fcmp ult double %x, 5.000000e+00
+  %1 = fcmp ult double %x, 1.000000e+01
+  %. = select i1 %1, double 2.000000e+00, double 0.000000e+00
+  %2 = select i1 %0, double 1.000000e+00, double %.
+  ret double %2
+}
+
+; Function Attrs: norecurse nounwind readnone
+define double @testForIncrThreeTimes(double %x) local_unnamed_addr #0 {
+entry:
+  %0 = fadd double %x, 1.000000e+00
+  %1 = fadd double %0, 1.000000e+00
+  %2 = fadd double %1, 1.000000e+00
+  %3 = tail call double @"binary:"(double undef, double %2)
+  ret double %3
+}
+
+; Function Attrs: norecurse nounwind readnone
+define double @testForMultTwoThreeTimes(double %x) local_unnamed_addr #0 {
+entry:
+  %0 = fmul double %x, 2.000000e+00
+  %1 = fmul double %0, 2.000000e+00
+  %2 = fmul double %1, 2.000000e+00
+  %3 = tail call double @"binary:"(double undef, double %2)
+  ret double %3
+}
+
+; Function Attrs: norecurse nounwind readnone
+define double @testWhileIncrUntil(double %x) local_unnamed_addr #0 {
+entry:
+  %0 = fcmp ult double %x, 6.000000e+00
+  br i1 %0, label %while.loop.preheader, label %while.exit
+
+while.loop.preheader:                             ; preds = %entry
+  br label %while.loop
+
+while.loop:                                       ; preds = %while.loop.preheader, %while.loop
+  %.01 = phi double [ %1, %while.loop ], [ %x, %while.loop.preheader ]
+  %1 = fadd double %.01, 1.000000e+00
+  %2 = fcmp ult double %1, 6.000000e+00
+  br i1 %2, label %while.loop, label %while.exit.loopexit
+
+while.exit.loopexit:                              ; preds = %while.loop
+  br label %while.exit
+
+while.exit:                                       ; preds = %while.exit.loopexit, %entry
+  %.0.lcssa = phi double [ %x, %entry ], [ %1, %while.exit.loopexit ]
+  %3 = tail call double @"binary:"(double undef, double %.0.lcssa)
+  ret double %3
+}
+
+; Function Attrs: norecurse nounwind readnone
+define double @testWhileMultUntil(double %x) local_unnamed_addr #0 {
+entry:
+  %0 = fcmp ult double %x, 6.000000e+00
+  br i1 %0, label %while.loop.preheader, label %while.exit
+
+while.loop.preheader:                             ; preds = %entry
+  br label %while.loop
+
+while.loop:                                       ; preds = %while.loop.preheader, %while.loop
+  %.01 = phi double [ %1, %while.loop ], [ %x, %while.loop.preheader ]
+  %1 = fmul double %.01, 2.000000e+00
+  %2 = fcmp ult double %1, 6.000000e+00
+  br i1 %2, label %while.loop, label %while.exit.loopexit
+
+while.exit.loopexit:                              ; preds = %while.loop
+  br label %while.exit
+
+while.exit:                                       ; preds = %while.exit.loopexit, %entry
+  %.0.lcssa = phi double [ %x, %entry ], [ %1, %while.exit.loopexit ]
+  %3 = tail call double @"binary:"(double undef, double %.0.lcssa)
+  ret double %3
+}
+
+; Function Attrs: nounwind readnone
+define double @testBranchFib(double %x) local_unnamed_addr #1 {
+entry:
+  %0 = fcmp ult double %x, 3.000000e+00
+  br i1 %0, label %if.exit, label %if.else
+
+if.else:                                          ; preds = %entry
+  %1 = fadd double %x, -1.000000e+00
+  %2 = tail call double @testBranchFib(double %1)
+  %3 = fadd double %x, -2.000000e+00
+  %4 = tail call double @testBranchFib(double %3)
+  %5 = fadd double %2, %4
+  ret double %5
+
+if.exit:                                          ; preds = %entry
+  ret double 1.000000e+00
+}
+
+; Function Attrs: norecurse nounwind readnone
+define double @fibi(double %x) local_unnamed_addr #0 {
+entry:
+  br label %for.loop
+
+for.loop:                                         ; preds = %for.loop, %entry
+  %.02 = phi double [ 1.000000e+00, %entry ], [ %0, %for.loop ]
+  %.01 = phi double [ 1.000000e+00, %entry ], [ %.02, %for.loop ]
+  %.0 = phi double [ 3.000000e+00, %entry ], [ %1, %for.loop ]
+  %0 = fsub double %.01, %.02
+  %1 = fadd double %.0, 1.000000e+00
+  %2 = fcmp ult double %1, %x
+  br i1 %2, label %for.loop, label %for.exit
+
+for.exit:                                         ; preds = %for.loop
+  %3 = tail call double @"binary:"(double undef, double %0)
+  ret double %3
+}
+
+; Function Attrs: norecurse nounwind readnone
+define double @main() local_unnamed_addr #0 {
+entry:
+  %0 = tail call double @newtest(double 2.800000e+01)
+  ret double %0
+}
+
+; Function Attrs: norecurse nounwind readnone
+define double @main.1() local_unnamed_addr #0 {
+entry:
+  %0 = tail call double @testInt(double 1.000000e+00, double 3.000000e+00)
+  ret double %0
+}
+
+; Function Attrs: norecurse nounwind readnone
+define double @main.2() local_unnamed_addr #0 {
+entry:
+  %0 = tail call double @testDouble(double 1.000000e+00, double 3.000000e+00)
+  ret double %0
+}
+
+; Function Attrs: norecurse nounwind readnone
+define double @main.3() local_unnamed_addr #0 {
+entry:
+  %0 = tail call double @testMultTen(double 2.800000e+01)
+  ret double %0
+}
+
+; Function Attrs: norecurse nounwind readnone
+define double @main.4() local_unnamed_addr #0 {
+entry:
+  %0 = tail call double @testDivTwenty(double 1.400000e+01)
+  ret double %0
+}
+
+; Function Attrs: norecurse nounwind readnone
+define double @main.5() local_unnamed_addr #0 {
+entry:
+  %0 = tail call double @testIfFiveTenElse(double 4.000000e+00)
+  ret double %0
+}
+
+; Function Attrs: norecurse nounwind readnone
+define double @main.6() local_unnamed_addr #0 {
+entry:
+  %0 = tail call double @testIfFiveTenElse(double 5.000000e+00)
+  ret double %0
+}
+
+; Function Attrs: norecurse nounwind readnone
+define double @main.7() local_unnamed_addr #0 {
+entry:
+  %0 = tail call double @testIfFiveTenElse(double 1.100000e+01)
+  ret double %0
+}
+
+; Function Attrs: norecurse nounwind readnone
+define double @main.8() local_unnamed_addr #0 {
+entry:
+  %0 = tail call double @testForIncrThreeTimes(double 6.000000e+00)
+  ret double %0
+}
+
+; Function Attrs: norecurse nounwind readnone
+define double @main.9() local_unnamed_addr #0 {
+entry:
+  %0 = tail call double @testForMultTwoThreeTimes(double 6.000000e+00)
+  ret double %0
+}
+
+; Function Attrs: norecurse nounwind readnone
+define double @main.10() local_unnamed_addr #0 {
+entry:
+  %0 = tail call double @testWhileIncrUntil(double 4.000000e+00)
+  ret double %0
+}
+
+; Function Attrs: norecurse nounwind readnone
+define double @main.11() local_unnamed_addr #0 {
+entry:
+  %0 = tail call double @testWhileMultUntil(double 4.000000e+00)
+  ret double %0
+}
+
+; Function Attrs: nounwind readnone
+define double @main.12() local_unnamed_addr #1 {
+entry:
+  %0 = tail call double @testBranchFib(double 4.000000e+00)
+  ret double %0
+}
+
+attributes #0 = { norecurse nounwind readnone }
+attributes #1 = { nounwind readnone }
+
+Evaluated to: 9.333333333333334

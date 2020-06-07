@@ -13,7 +13,7 @@ import System.Console.Haskeline
 import qualified LLVM.AST as AST
 
 initModule :: AST.Module
-initModule = emptyModule "my cool jit"
+initModule = emptyModule "dsl2ir jit"
 
 process :: AST.Module -> String -> IO (Maybe AST.Module)
 process modo source = do
@@ -32,9 +32,9 @@ repl = runInputT defaultSettings (loop initModule)
   where
   loop :: AST.Module -> InputT IO ()
   loop mod = do
-    minput <- getInputLine "ready> "
+    minput <- getInputLine "dsl2ir> "
     case minput of
-      Nothing -> outputStrLn "Goodbye."
+      Nothing -> outputStrLn "See you later alligator."
       Just input -> do
         modn <- lift $ process mod input
         case modn of
@@ -46,4 +46,4 @@ main = do
   args <- getArgs
   case args of
     []      -> repl
-    [fname] -> processFile fname >> return ()
+    [fname] -> processFile fname >> pure ()
