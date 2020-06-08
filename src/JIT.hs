@@ -34,6 +34,7 @@ jit c = EE.withMCJIT c oLevel model framePtrElim fastIns
 astPasses :: PassSetSpec
 astPasses = defaultCuratedPassSetSpec { optLevel = Just 3 }
 
+-- Runs the JIT where it evaluates the given module.
 runJIT :: AST.Module -> IO (Either String AST.Module)
 runJIT mainModule = do
   withContext $ \context ->

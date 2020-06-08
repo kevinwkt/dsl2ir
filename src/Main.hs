@@ -43,6 +43,7 @@ repl = runInputT defaultSettings (loop initModule)
 
 main :: IO ()
 main = do
+  -- If we get an argument, assume it is a path to a file to process.
   args <- getArgs
   case args of
     []      -> repl
