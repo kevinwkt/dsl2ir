@@ -163,6 +163,27 @@ for.exit:                                         ; preds = %for.loop
 }
 
 ; Function Attrs: norecurse nounwind readnone
+define double @testIfThenIf(double %x) local_unnamed_addr #0 {
+entry:
+  %0 = fcmp ugt double %x, 3.000000e+00
+  br i1 %0, label %if.then, label %if.else
+
+if.then:                                          ; preds = %entry
+  %1 = fcmp ugt double %x, 6.000000e+00
+  %2 = fadd double %x, 1.000000e+00
+  %3 = select i1 %1, double %x, double %2
+  br label %if.exit
+
+if.else:                                          ; preds = %entry
+  %4 = fadd double %x, -1.000000e+00
+  br label %if.exit
+
+if.exit:                                          ; preds = %if.then, %if.else
+  %5 = phi double [ %4, %if.else ], [ %3, %if.then ]
+  ret double %5
+}
+
+; Function Attrs: norecurse nounwind readnone
 define double @main() local_unnamed_addr #0 {
 entry:
   %0 = tail call double @newtest(double 2.800000e+01)
@@ -246,8 +267,15 @@ entry:
   ret double %0
 }
 
+; Function Attrs: norecurse nounwind readnone
+define double @main.12() local_unnamed_addr #0 {
+entry:
+  %0 = tail call double @testIfThenIf(double 3.000000e+00)
+  ret double %0
+}
+
 ; Function Attrs: nounwind readnone
-define double @main.12() local_unnamed_addr #1 {
+define double @main.13() local_unnamed_addr #1 {
 entry:
   %0 = tail call double @testBranchFib(double 4.000000e+00)
   ret double %0

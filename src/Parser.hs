@@ -80,7 +80,7 @@ call = do
 
 ifthen :: Parser Expr
 ifthen = do
-  reserved "_"
+  reserved "______"
   cond <- expr
   reserved "_"
   tr <- expr
