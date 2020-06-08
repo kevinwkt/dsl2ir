@@ -27,9 +27,19 @@ _____ ifthenif(x)
     _ (x - 1)
   _ (x+1);
 
+_____ orCheck(x)
+  ______ (((x > 10) || (x == 3))) _
+    1 _ 0;
+
+_____ andCheck(x)
+  ______ (((x > 1) && (x == 3))) _
+    1 _ 0;
+
 
 # Call it. 
 #testWhileMultUntil(2);
 #subtwo(1);
 #newesttest(1.2);
-ifthenif(13);
+#ifthenif(13);
+#orCheck(2);
+andCheck(4);

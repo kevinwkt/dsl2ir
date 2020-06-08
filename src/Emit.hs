@@ -109,6 +109,8 @@ binops = Map.fromList [
     , (">=", ge)
     , ("==", eq)
     , ("!=", neq)
+    , ("||", fadd)
+    , ("&&", fmul)
   ]
 
 cgen :: S.Expr -> Codegen AST.Operand
@@ -122,7 +124,6 @@ cgen (S.Let a b c) = do
 cgen (S.BinaryOp "=" (S.Var var) val) = do
   a <- getvar var
   cval <- cgen val
-  store a cval
   return cval
 cgen (S.BinaryOp op a b) =
   case Map.lookup op binops of

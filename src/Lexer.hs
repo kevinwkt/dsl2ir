@@ -15,7 +15,7 @@ lexer :: Tok.TokenParser ()
 lexer = Tok.makeTokenParser style
   where
     ops = ["+","*","-","/",";","=",",","<",">","|"
-          , ":", "==", "!=", ">=", "<="]
+          , "||", "&&", ":", "==", "!=", ">=", "<="]
     names = ["_", "__", "___", "____", "_____"
             , "______", "extern", "binary"
             , "unary"]
