@@ -41,5 +41,5 @@ _____ andCheck(x)
 #subtwo(1);
 #newesttest(1.2);
 #ifthenif(13);
-#orCheck(2);
-andCheck(4);
+orCheck(4);
+#andCheck(3);
