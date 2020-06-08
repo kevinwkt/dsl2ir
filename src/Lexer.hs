@@ -14,10 +14,10 @@ import qualified Text.Parsec.Token as Tok
 lexer :: Tok.TokenParser ()
 lexer = Tok.makeTokenParser style
   where
-    ops = ["+","*","-","/",";","=",",","<",">","|",":", "==", "!=", ">=", "<="]
-    names = [".","extern","if","then","else","in","for"
-            ,"binary", "unary", "var", "while"
-            ]
+    ops = ["+","*","-","/",";","=",",","<",">","|"
+          , ":", "==", "!=", ">=", "<="]
+    names = ["_", "__", "___", "____", "_____"
+            , "extern", "binary", "unary"]
     style = emptyDef {
                Tok.commentLine = "#"
              , Tok.reservedOpNames = ops

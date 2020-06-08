@@ -59,7 +59,7 @@ variable = Var <$> identifier
 
 function :: Parser Expr
 function = do
-  reserved "."
+  reserved "_____"
   name <- identifier
   args <- parens $ many identifier
   body <- expr
@@ -80,17 +80,17 @@ call = do
 
 ifthen :: Parser Expr
 ifthen = do
-  reserved "if"
+  reserved "_"
   cond <- expr
-  reserved "then"
+  reserved "_"
   tr <- expr
-  reserved "else"
+  reserved "_"
   fl <- expr
   return $ If cond tr fl
 
 for :: Parser Expr
 for = do
-  reserved "for"
+  reserved "__"
   var <- identifier
   reservedOp "="
   start <- expr
@@ -98,33 +98,33 @@ for = do
   cond <- expr
   reservedOp ","
   step <- expr
-  reserved "in"
+  reserved "__"
   body <- expr
   return $ For var start cond step body
 
 while :: Parser Expr
 while = do
-  reserved "while"
+  reserved "___"
   cond <- expr
-  reserved "in"
+  reserved "__"
   body <- expr
   return $ While cond body
   
 letins :: Parser Expr
 letins = do
-  reserved "var"
+  reserved "____"
   defs <- commaSep $ do
     var <- identifier
     reservedOp "="
     val <- expr
     return (var, val)
-  reserved "in"
+  reserved "__"
   body <- expr
   return $ foldr (uncurry Let) body defs
 
 unarydef :: Parser Expr
 unarydef = do
-  reserved "."
+  reserved "_____"
   reserved "unary"
   o <- op
   args <- parens $ many identifier
@@ -133,7 +133,7 @@ unarydef = do
 
 binarydef :: Parser Expr
 binarydef = do
-  reserved "."
+  reserved "_____"
   reserved "binary"
   o <- op
   prec <- int

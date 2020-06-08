@@ -1,28 +1,23 @@
 # Define ':' for sequencing: as a low-precedence operator that ignores operands
 # and just returns the RHS.
-. binary : 1 (x y) y;
+_____ binary : 1 (x y) y;
 
-. newtest(x)
-  var y = x in
+_____ newtest(x)
+  ____ y = x __
     (y = (y * 10)): 
   y;
-
-. testIfFiveTenElse(x)
-  if (x < 5) then
-    1
-  else
-    if(x < 101) then
-      2
-    else 
-      0;
       
-. eenewesttest(x)
-  if (x <= 2) then
+_____ newesttest(x)
+  _ (x <= 2) _
     x
-  else
+  _
     1;
 
+_____ testWhileMultUntil(x)
+  (___ (x < 29) __
+    x = (x / 2)) :
+  x;
 
 
 # Call it. 
-eenewesttest(10);
+newtest(9);
