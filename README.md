@@ -15,7 +15,8 @@ Eric Parton A01023503
 
 3. Run `stack build`  
 
-4. You can now run files using our compiler with the following command `stack exec dsl2ir-exe <file path>`.
+4. You can now run files using our compiler with the following command `stack exec dsl2ir-exe <file path and name>`  
+ex: `stack exec dsl2ir-exe helloWorld`, if you have a file called helloWorld within your project directory.
 
 ### Introduction
 The challenge was to use a purely functional programming language and its benefits to implement a compiler from the lexer and parser all the way to the intermediate representation (IR) utilized by LLVM. There are multiple reasons to why we want to produce LLVM IR but some of them could be the optimization passes that LLVM offers, the wide range of Backends that LLVM supports and can generate code for, along with a complete toolchain to analyze, experiment and optimize the back end for. It is important to remember that LLVM IR uses “unlimited single-assignment register machine instruction set”. This means that despite CPUs having a fixed number of registers, LLVM IR has an infinite number and new registers are created to hold the result of every instruction. This also leads us to use Static Single Assignment (SSA) as registers may be assigned to only once which may cause a lot of redundant memory operations but this is solved by the use of Scalar Replacement of Aggregates (SROA) to clean it up.  
@@ -81,7 +82,7 @@ Description
 _Used for the definition of functions_  
 
 Syntax  
-`_____ functionName(parameters) functionBody;`  
+`_____ `**`functionName`**`(`**`parameters`**`) `**`functionBody`**`;`  
 
 Example
 ```
@@ -97,7 +98,7 @@ Description
 _Used for creating variables_
 
 Syntax  
-`____ variableName`
+`____ `**`variableName`**
 
 
 Example
@@ -113,7 +114,7 @@ Description
 _These are two closely related reserved word.  ______ represents the reserved words for ‘if’ and _ represents the reserved words for ‘then’, and ‘else’._
 
 Syntax  
-`_ (condition) _ ifBody`  
+`_ (`**`condition`**`) _ `**`ifBody`**``  
 
 
 Example  
@@ -130,7 +131,7 @@ Description
 _Used for defining a for-loop_
 
 Syntax  
-`(__ variableAssignment, condition, increment __ loopBody)`  
+`(__ `**`variableAssignment`**`, `**`condition`**`, `**`increment `**` __ `**` loopBody`**`)`  
 
 
 Example  
@@ -147,7 +148,7 @@ Description
 _Used for defining a while-loop._
 
 Syntax  
-`(___ (condition) __ loopBody)`  
+`(___ (`**`condition`**`) __ `**`loopBody`**`)`  
 
 Example  
 ```
@@ -180,7 +181,7 @@ _For using built-in JIT functions._
 
 
 Syntax  
-`extern function`  
+`extern `**`functionName`**  
 
 Example  
 ```
@@ -196,7 +197,7 @@ _For defining binary symbols/functions._
 
 
 Syntax  
-`_____ binary symbol precedence (parameters) binaryBody`
+`_____ binary `**`symbol precedence`**` (`**`parameters`**`) `**`binaryBody`**
 
 
 Example  
@@ -217,7 +218,7 @@ _For defining unary symbols/functions._
 
 
 Syntax  
-`_____ unary symbol (parameters) unaryBody`
+`_____ unary `**`symbol`**` (`**`parameters`**`) `**`unaryBody`**
 
 
 Example  
@@ -230,30 +231,34 @@ _____ unary!(v)     # Define a NOT operator as !
 <br>
 
 ### Full Code Examples
+
+A function that multiplies an input value by two, ten times.
 ```
-_____ timesTwoToTheTenthPower(x)		# Multiply x by 210
+_____ timesTwoToTheTenthPower(x)	# Multiply x by 2^10
    (__ i = 0, i < 101, 1.0 __       # For i = 0, i < 10
        x = (x / 2)):                # Multiply x by 2
    x;                               # Return x
-timesTwoToTheTenthPower(2);         # This will return 211 = 2048
+timesTwoToTheTenthPower(2);         # This will return 2^11 = 2048
 ```
 
+An iterative implementation for caclulating the xth value in the Fibonacci Sequence.
 ```
-_____ fib(x)                    # Calculate the xth value of the Fibonacci sequence
+_____ fib(x)                    # Calculate the xth value of the Fibonacci Sequence
   ____ a = 1, b = 1, c = 0 __   # Declare some variables using reserved word ____
   ( __ i = 100, i < x, 1.0 __   # Declare a for loop
     c = (a + b) : 
     a = b : 
     b = c) :
-  b;				                  	# Return b
-fib(5)				                	# This will return 5
+  b;                            # Return b
+fib(5)                          # This will return 5
 ```
 
+A function that demonstrates the usage of ______ and _.
 ```
 _____ ifthenif(x)
   ______(x > 100) _     # If x is larger than 9
     ______(x > 25) _ x	# If x is larger than 25 then x
-    _ (x - 1)			      # Else x + 1
+    _ (x - 1)           # Else x + 1
   _ (x+1);              # Else x - 1
 ifthenif(110)           # This will return 13
 ```
