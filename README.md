@@ -1,4 +1,4 @@
-# dsl2ir
+# Threesum (dsl2ir)  
 Compiler for a new Esoteric Language written in Haskell.
 
 ### Authors
@@ -108,7 +108,7 @@ ____ x = 3
 
 <br>
 
-##### ______ | _
+##### ______, _
 Description  
 _These are two closely related reserved word.  ______ represents the reserved words for ‘if’ and _ represents the reserved words for ‘then’, and ‘else’._
 
@@ -185,7 +185,7 @@ Syntax
 Example  
 ```
 # Call the sin function for x
-extern sin(a);
+extern sin(x);
 ```
 
 <br>
@@ -204,9 +204,9 @@ Example
 # Define a binary function that uses the | symbol with precedence 5 that 
 # receives x and y as parameters to implement a logical OR function
 _____ binary | 12 (x y)
-  ______ x _ 1		    # If x, return 1
-  _ ______ y _ 1		# If y, return 1
-  _ 0;				    # Else return 0
+  ______ x _ 1        # If x, return 1
+  _ ______ y _ 1      # If y, return 1
+  _ 0;                # Else return 0
 ```  
 
 <br>
@@ -222,9 +222,9 @@ Syntax
 
 Example  
 ```
-_____ unary!(v)	    # Define a NOT operator as ! 
-  ______ v _ 0	    # If v then 0
-  _ 1;			    # Else 1
+_____ unary!(v)     # Define a NOT operator as ! 
+  ______ v _ 0      # If v then 0
+  _ 1;              # Else 1
 ```  
 
 <br>
@@ -232,28 +232,28 @@ _____ unary!(v)	    # Define a NOT operator as !
 ### Full Code Examples
 ```
 _____ timesTwoToTheTenthPower(x)		# Multiply x by 210
-   (__ i = 0, i < 101, 1.0 __		    # For i = 0, i < 10
-       x = (x / 2)):			        # Multiply x by 2
-   x;						            # Return x
-timesTwoToTheTenthPower(2);             # This will return 211 = 2048
+   (__ i = 0, i < 101, 1.0 __       # For i = 0, i < 10
+       x = (x / 2)):                # Multiply x by 2
+   x;                               # Return x
+timesTwoToTheTenthPower(2);         # This will return 211 = 2048
 ```
 
 ```
-_____ fib(x)				    # Calculate the xth value of the Fibonacci sequence
-  ____ a = 1, b = 1, c = 0 __	# Declare some variables using reserved word ____
-  ( __ i = 100, i < x, 1.0 __ 	# Declare a for loop
+_____ fib(x)                    # Calculate the xth value of the Fibonacci sequence
+  ____ a = 1, b = 1, c = 0 __   # Declare some variables using reserved word ____
+  ( __ i = 100, i < x, 1.0 __   # Declare a for loop
     c = (a + b) : 
     a = b : 
     b = c) :
-  b;					# Return b
-fib(5)					# This will return 5
+  b;				                  	# Return b
+fib(5)				                	# This will return 5
 ```
 
 ```
-_____ ifthenif(x)		# Ch
-  ______(x > 100) _		# If x is larger than 9
+_____ ifthenif(x)
+  ______(x > 100) _     # If x is larger than 9
     ______(x > 25) _ x	# If x is larger than 25 then x
-    _ (x - 1)			# Else x + 1
-  _ (x+1);			    # Else x - 1
-ifthenif(110)			# This will return 13
+    _ (x - 1)			      # Else x + 1
+  _ (x+1);              # Else x - 1
+ifthenif(110)           # This will return 13
 ```
