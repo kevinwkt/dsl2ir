@@ -3,7 +3,7 @@
 _____ binary : 1 (x y) y;
 
 _____ newtest(x)
-  ____ y = x __
+  ____ y = x __ 
     (y = (y * 10)): 
   y;
       
@@ -37,9 +37,11 @@ _____ andCheck(x)
 
 
 # Call it. 
-#testWhileMultUntil(2);
+testWhileMultUntil(2);
 #subtwo(1);
 #newesttest(1.2);
 #ifthenif(13);
-orCheck(4);
-#andCheck(3);
+#orCheck(2);
+#andCheck(2);
+#newtest(9);
+

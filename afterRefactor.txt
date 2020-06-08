@@ -165,11 +165,11 @@ for.exit:                                         ; preds = %for.loop
 ; Function Attrs: norecurse nounwind readnone
 define double @testIfThenIf(double %x) local_unnamed_addr #0 {
 entry:
-  %0 = fcmp ugt double %x, 3.000000e+00
+  %0 = fcmp ugt double %x, 9.000000e+00
   br i1 %0, label %if.then, label %if.else
 
 if.then:                                          ; preds = %entry
-  %1 = fcmp ugt double %x, 6.000000e+00
+  %1 = fcmp ugt double %x, 1.300000e+01
   %2 = fadd double %x, 1.000000e+00
   %3 = select i1 %1, double %x, double %2
   br label %if.exit
@@ -270,7 +270,7 @@ entry:
 ; Function Attrs: norecurse nounwind readnone
 define double @main.12() local_unnamed_addr #0 {
 entry:
-  %0 = tail call double @testIfThenIf(double 3.000000e+00)
+  %0 = tail call double @testIfThenIf(double 1.300000e+01)
   ret double %0
 }
 
