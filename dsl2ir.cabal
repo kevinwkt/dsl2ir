@@ -54,16 +54,3 @@ executable dsl2ir-exe
     , transformers         >= 0.3.0.0 && < 0.6
     , containers
   default-language: Haskell2010
-
-test-suite dsl2ir-test
-  type: exitcode-stdio-1.0
-  main-is: Spec.hs
-  other-modules:
-      Paths_dsl2ir
-  hs-source-dirs:
-      test
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      base >=4.7 && <5
-    , dsl2ir
-  default-language: Haskell2010
