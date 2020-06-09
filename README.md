@@ -16,7 +16,8 @@ Eric Parton A01023503
 3. Run `stack build`  
 
 4. You can now run files using our compiler with the following command `stack exec dsl2ir-exe <file path and name>`  
-ex: `stack exec dsl2ir-exe helloWorld`, if you have a file called helloWorld within your project directory.
+ex: `stack exec dsl2ir-exe helloWorld`, if you have a file called helloWorld within your project directory.  
+Alternatively, you can simply run  `stack exec dsl2ir-exe`  to permit individual command line instructions (thanks JIT compilation)
 
 ### Introduction
 The challenge was to use a purely functional programming language and its benefits to implement a compiler from the lexer and parser all the way to the intermediate representation (IR) utilized by LLVM. There are multiple reasons to why we want to produce LLVM IR but some of them could be the optimization passes that LLVM offers, the wide range of Backends that LLVM supports and can generate code for, along with a complete toolchain to analyze, experiment and optimize the back end for. It is important to remember that LLVM IR uses “unlimited single-assignment register machine instruction set”. This means that despite CPUs having a fixed number of registers, LLVM IR has an infinite number and new registers are created to hold the result of every instruction. This also leads us to use Static Single Assignment (SSA) as registers may be assigned to only once which may cause a lot of redundant memory operations but this is solved by the use of Scalar Replacement of Aggregates (SROA) to clean it up.  
