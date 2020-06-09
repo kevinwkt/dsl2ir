@@ -8,9 +8,9 @@ entry:
 
 define double @foo(double %a, double %b) {
 entry:
-  %0 = alloca double
+  %0 = alloc double
   store double %a, double* %0
-  %1 = alloca double
+  %1 = alloc double
   store double %b, double* %1
   %2 = load double, double* %0
   %3 = load double, double* %0
@@ -29,7 +29,7 @@ entry:
 
 define double @bar(double %a) {
 entry:
-  %0 = alloca double
+  %0 = alloc double
   store double %a, double* %0
   %1 = load double, double* %0
   %2 = call double @foo(double %1, double 4.000000e+00)

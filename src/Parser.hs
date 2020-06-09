@@ -30,8 +30,8 @@ esotericInt = do
 floating :: Parser Expr
 floating = Float <$> float
 
-binop = Ex.Infix (BinaryOp <$> op) Ex.AssocLeft
-unop = Ex.Prefix (UnaryOp <$> op)
+binOp = Ex.Infix (BinaryOp <$> op) Ex.AssocLeft
+unOp = Ex.Prefix (UnaryOp <$> op)
 
 binary s = Ex.Infix (reservedOp s >> return (BinaryOp s))
 
@@ -43,7 +43,7 @@ op = do
   return o
 
 -- The order of the binary operators indicates their relative precedence.
-binops = [[binary "=" Ex.AssocLeft]
+binOps = [[binary "=" Ex.AssocLeft]
         ,[binary "*" Ex.AssocLeft,
           binary "/" Ex.AssocLeft]
         ,[binary "+" Ex.AssocLeft,
@@ -59,7 +59,7 @@ binops = [[binary "=" Ex.AssocLeft]
 
 -- Will build an expression parser with all the possible inputs but functions.
 expr :: Parser Expr
-expr =  Ex.buildExpressionParser (binops ++ [[unop], [binop]]) factor
+expr =  Ex.buildExpressionParser (binOps ++ [[unOp], [binOp]]) factor
 
 variable :: Parser Expr
 variable = Var <$> identifier
@@ -90,8 +90,8 @@ call = do
 
 -- If then logic. Since it should always evaluate something, 
 -- an else clause should always be present.
-ifthen :: Parser Expr
-ifthen = do
+ifThen :: Parser Expr
+ifThen = do
   reserved "______" -- 6 underscores.
   cond <- expr
   reserved "_" -- If: 1 underscore.
@@ -127,8 +127,8 @@ while = do
   
 -- Variable definition logic. Can define multiple variables separated by a 
 -- comma.
-letins :: Parser Expr
-letins = do
+letIns :: Parser Expr
+letIns = do
   reserved "____" -- 4 underscores.
   defs <- commaSep $ do
     var <- identifier
@@ -140,8 +140,8 @@ letins = do
   return $ foldr (uncurry Let) body defs
 
 -- Unary op definition for user.
-unarydef :: Parser Expr
-unarydef = do
+unDef :: Parser Expr
+unDef = do
   reserved "_____" -- 5 underscores
   reserved "unary"
   o <- op
@@ -150,8 +150,8 @@ unarydef = do
   return $ UnaryDef o args body
 
 -- Binary op definition for user.
-binarydef :: Parser Expr
-binarydef = do
+binDef :: Parser Expr
+binDef = do
   reserved "_____" -- 5 underscores.
   reserved "binary"
   o <- op
@@ -168,8 +168,8 @@ factor = try floating
       <|> try int
       <|> try call
       <|> try variable
-      <|> ifthen
-      <|> try letins
+      <|> ifThen
+      <|> try letIns
       <|> for
       <|> while
       <|> parens expr
@@ -179,8 +179,8 @@ factor = try floating
 defn :: Parser Expr
 defn = try extern
     <|> try function
-    <|> try unarydef
-    <|> try binarydef
+    <|> try unDef
+    <|> try binDef
     <|> expr
 
 contents :: Parser a -> Parser a
@@ -190,8 +190,8 @@ contents parser = do
   eof
   return rParser
 
-toplevel :: Parser [Expr]
-toplevel = many $ do
+upperLevel :: Parser [Expr]
+upperLevel = many $ do
     def <- defn
     reservedOp ";" -- Always expect a semicolon after an expression.
     return def
@@ -199,5 +199,5 @@ toplevel = many $ do
 parseExpr :: String -> Either ParseError Expr
 parseExpr = parse (contents expr) "<stdin>"
 
-parseToplevel :: String -> Either ParseError [Expr]
-parseToplevel = parse (contents toplevel) "<stdin>"
+parseUpperLevel :: String -> Either ParseError [Expr]
+parseUpperLevel = parse (contents upperLevel) "<stdin>"

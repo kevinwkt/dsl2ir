@@ -153,13 +153,13 @@ instr ins = do
   let ref = (UnName n)
   blk <- current
   let i = stack blk
-  modifyBlock (blk { stack = (ref := ins) : i } )
+  changeBlock (blk { stack = (ref := ins) : i } )
   return $ local ref
 
 terminator :: Named Terminator -> Codegen (Named Terminator)
 terminator trm = do
   blk <- current
-  modifyBlock (blk { term = Just trm })
+  changeBlock (blk { term = Just trm })
   return trm
 
 named :: String -> Codegen a -> Codegen Operand
@@ -167,7 +167,7 @@ named iname m = m >> do
   blk <- current
   let b = Name iname
       (_ := x) = last (stack blk)
-  modifyBlock $ blk { stack = init (stack blk) ++ [b := x] }
+  changeBlock $ blk { stack = init (stack blk) ++ [b := x] }
   return $ local b
 
 -------------------------------------------------------------------------------
@@ -177,8 +177,8 @@ named iname m = m >> do
 entry :: Codegen Name
 entry = gets currentBlock
 
-addBlock :: String -> Codegen Name
-addBlock bname = do
+createBlock :: String -> Codegen Name
+createBlock bname = do
   bls <- gets blocks
   ix  <- gets blockCount
   nms <- gets names
@@ -192,16 +192,16 @@ addBlock bname = do
                    }
   return (Name qname)
 
-setBlock :: Name -> Codegen Name
-setBlock bname = do
+defineBlock :: Name -> Codegen Name
+defineBlock bname = do
   modify $ \s -> s { currentBlock = bname }
   return bname
 
 getBlock :: Codegen Name
 getBlock = gets currentBlock
 
-modifyBlock :: BlockState -> Codegen ()
-modifyBlock new = do
+changeBlock :: BlockState -> Codegen ()
+changeBlock new = do
   active <- gets currentBlock
   modify $ \s -> s { blocks = Map.insert active new (blocks s) }
 
@@ -214,8 +214,8 @@ assign var x = do
   lcls <- gets symtab
   modify $ \s -> s { symtab = [(var, x)] ++ lcls }
 
-getvar :: String -> Codegen Operand
-getvar var = do
+getVar :: String -> Codegen Operand
+getVar var = do
   syms <- gets symtab
   case lookup var syms of
     Just x  -> return x
@@ -262,8 +262,8 @@ toArgs = map (\x -> (x, []))
 call :: Operand -> [Operand] -> Codegen Operand
 call fn args = instr $ Call Nothing CC.C [] (Right fn) (toArgs args) [] []
 
-alloca :: Type -> Codegen Operand
-alloca ty = instr $ Alloca ty Nothing 0 []
+alloc :: Type -> Codegen Operand
+alloc ty = instr $ Alloca ty Nothing 0 []
 
 store :: Operand -> Operand -> Codegen Operand
 store ptr val = instr $ Store False ptr val Nothing 0 []
