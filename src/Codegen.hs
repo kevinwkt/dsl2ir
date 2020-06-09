@@ -29,17 +29,22 @@ import qualified LLVM.AST.FloatingPointPredicate as FP
 newtype LLVM a = LLVM (State AST.Module a)
   deriving (Functor, Applicative, Monad, MonadState AST.Module )
 
+-- Executes an AST.module state by applying an LLVM monad and returns
+-- the updated state monad.
 runLLVM :: AST.Module -> LLVM a -> AST.Module
 runLLVM mod (LLVM m) = execState m mod
 
+-- Creates an empty AST.Module with the given name.
 emptyModule :: String -> AST.Module
 emptyModule label = defaultModule { moduleName = label }
 
+-- Adds a definition inside an LLVM monad.
 addDefn :: Definition -> LLVM ()
 addDefn d = do
   defs <- gets moduleDefinitions
   modify $ \s -> s { moduleDefinitions = defs ++ [d] }
 
+-- Defines a block inside an LLVM monad.
 define ::  Type -> String -> [(Type, Name)] -> [BasicBlock] -> LLVM ()
 define retty label argtys body = addDefn $
   GlobalDefinition $ functionDefaults {
@@ -49,6 +54,7 @@ define retty label argtys body = addDefn $
   , basicBlocks = body
   }
 
+-- Defines an external call inside an LLVM Monad.
 external ::  Type -> String -> [(Type, Name)] -> LLVM ()
 external retty label argtys = addDefn $
   GlobalDefinition $ functionDefaults {
@@ -64,6 +70,7 @@ external retty label argtys = addDefn $
 -------------------------------------------------------------------------------
 
 -- IEEE 754 double
+-- Our only datatype in ThreeSum.
 double :: Type
 double = FloatingPointType 64 IEEE
 
@@ -73,6 +80,9 @@ double = FloatingPointType 64 IEEE
 
 type Names = Map.Map String Int
 
+-- Adds an occurence of a name inside the map, 
+-- appending an index to the string if the name already
+-- exists.
 uniqueName :: String -> Names -> (String, Names)
 uniqueName nm ns =
   case Map.lookup nm ns of
@@ -85,6 +95,7 @@ uniqueName nm ns =
 
 type SymbolTable = [(String, Operand)]
 
+-- State used to create our AST. Will represent a function.
 data CodegenState
   = CodegenState {
     currentBlock :: Name                     -- Name of the active block to append to
@@ -95,6 +106,7 @@ data CodegenState
   , names        :: Names                    -- Name Supply
   } deriving Show
 
+-- Building Block for instructions inside a function.
 data BlockState
   = BlockState {
     idx   :: Int                            -- Block index
@@ -106,39 +118,49 @@ data BlockState
 -- Codegen Operations
 -------------------------------------------------------------------------------
 
+-- Newtype to execute a Codegen State Monad.
 newtype Codegen a = Codegen { runCodegen :: State CodegenState a }
   deriving (Functor, Applicative, Monad, MonadState CodegenState )
 
+-- Sortes the blockstates by index.
 sortBlocks :: [(Name, BlockState)] -> [(Name, BlockState)]
 sortBlocks = sortBy (compare `on` (idx . snd))
 
+-- Translates a CodegenState into an array of BasicBlock
 createBlocks :: CodegenState -> [BasicBlock]
 createBlocks m = map makeBlock $ sortBlocks $ Map.toList (blocks m)
 
+-- Translates a blockstate to its LLVM counterpart.
 makeBlock :: (Name, BlockState) -> BasicBlock
 makeBlock (l, (BlockState _ s t)) = BasicBlock l (reverse s) (maketerm t)
   where
     maketerm (Just x) = x
     maketerm Nothing = error $ "Block has no terminator: " ++ (show l)
 
+-- Entry blockname used for the first instruciton to be executed.
 entryBlockName :: String
 entryBlockName = "entry"
 
+-- Creates an emtpy BlockState.
 emptyBlock :: Int -> BlockState
 emptyBlock i = BlockState i [] Nothing
 
+-- Creates an empty CodegenState.
 emptyCodegen :: CodegenState
 emptyCodegen = CodegenState (Name entryBlockName) Map.empty [] 1 0 Map.empty
 
+-- Executes the Codegen and returns a State Monad
 execCodegen :: [(String, Operand)] -> Codegen a -> CodegenState
 execCodegen vars m = execState (runCodegen m) emptyCodegen { symtab = vars }
 
+-- Increments the count of BlockStates (needed to add a new one).
 fresh :: Codegen Word
 fresh = do
   i <- gets count
   modify $ \s -> s { count = 1 + i }
   return $ i + 1
 
+-- Fetches the current block of a given Codegen
 current :: Codegen BlockState
 current = do
   c <- gets currentBlock
@@ -147,6 +169,7 @@ current = do
     Just x -> return x
     Nothing -> error $ "No such block: " ++ show c
 
+-- Adds an instruciton to the Codegen.
 instr :: Instruction -> Codegen (Operand)
 instr ins = do
   n <- fresh
@@ -156,19 +179,12 @@ instr ins = do
   changeBlock (blk { stack = (ref := ins) : i } )
   return $ local ref
 
+-- Defines the Codegen terminator.
 terminator :: Named Terminator -> Codegen (Named Terminator)
 terminator trm = do
   blk <- current
   changeBlock (blk { term = Just trm })
   return trm
-
-named :: String -> Codegen a -> Codegen Operand
-named iname m = m >> do
-  blk <- current
-  let b = Name iname
-      (_ := x) = last (stack blk)
-  changeBlock $ blk { stack = init (stack blk) ++ [b := x] }
-  return $ local b
 
 -------------------------------------------------------------------------------
 -- Block Stack
@@ -177,6 +193,7 @@ named iname m = m >> do
 entry :: Codegen Name
 entry = gets currentBlock
 
+-- Creates a block with a given name.
 createBlock :: String -> Codegen Name
 createBlock bname = do
   bls <- gets blocks
@@ -192,6 +209,7 @@ createBlock bname = do
                    }
   return (Name qname)
 
+-- Sets the current block to the one referenced by the name.
 defineBlock :: Name -> Codegen Name
 defineBlock bname = do
   modify $ \s -> s { currentBlock = bname }
@@ -200,6 +218,7 @@ defineBlock bname = do
 getBlock :: Codegen Name
 getBlock = gets currentBlock
 
+-- Changes the current block to the given state.
 changeBlock :: BlockState -> Codegen ()
 changeBlock new = do
   active <- gets currentBlock
@@ -209,11 +228,13 @@ changeBlock new = do
 -- Symbol Table
 -------------------------------------------------------------------------------
 
+-- Assigns a variable in the symbol table.
 assign :: String -> Operand -> Codegen ()
 assign var x = do
   lcls <- gets symtab
   modify $ \s -> s { symtab = [(var, x)] ++ lcls }
 
+-- Gets the value of the variable from the symbol table.
 getVar :: String -> Codegen Operand
 getVar var = do
   syms <- gets symtab
@@ -224,6 +245,7 @@ getVar var = do
 -------------------------------------------------------------------------------
 
 -- References
+-- All the references to operands.
 local ::  Name -> Operand
 local = LocalReference double
 
@@ -234,6 +256,7 @@ externf :: Name -> Operand
 externf = ConstantOperand . C.GlobalReference double
 
 -- Arithmetic and Constants
+-- All operations performed on operands.
 fadd :: Operand -> Operand -> Codegen Operand
 fadd a b = instr $ FAdd NoFastMathFlags a b []
 
@@ -245,6 +268,36 @@ fmul a b = instr $ FMul NoFastMathFlags a b []
 
 fdiv :: Operand -> Operand -> Codegen Operand
 fdiv a b = instr $ FDiv NoFastMathFlags a b []
+
+lt :: Operand -> Operand -> Codegen Operand
+lt a b = do
+  test <- fcmp FP.ULT a b
+  uitofp double test
+
+le :: Operand -> Operand -> Codegen Operand
+le a b = do
+  test <- fcmp FP.ULE a b
+  uitofp double test
+
+gt :: Operand -> Operand -> Codegen Operand
+gt a b = do
+  test <- fcmp FP.UGT a b
+  uitofp double test
+
+ge :: Operand -> Operand -> Codegen Operand
+ge a b = do
+  test <- fcmp FP.UGE a b
+  uitofp double test
+
+eq :: Operand -> Operand -> Codegen Operand
+eq a b = do
+  test <- fcmp FP.UEQ a b
+  uitofp double test
+
+neq :: Operand -> Operand -> Codegen Operand
+neq a b = do
+  test <- fcmp FP.UNE a b
+  uitofp double test
 
 fcmp :: FP.FloatingPointPredicate -> Operand -> Operand -> Codegen Operand
 fcmp cond a b = instr $ FCmp cond a b []
@@ -272,14 +325,18 @@ load :: Operand -> Codegen Operand
 load ptr = instr $ Load False ptr Nothing 0 []
 
 -- Control Flow
+-- breaks to the given label.
 br :: Name -> Codegen (Named Terminator)
 br val = terminator $ Do $ Br val []
 
+-- Breaks on two directions by evaluating a condition.
 cbr :: Operand -> Name -> Name -> Codegen (Named Terminator)
 cbr cond tr fl = terminator $ Do $ CondBr cond tr fl []
 
+-- Phi-node
 phi :: Type -> [(Operand, Name)] -> Codegen Operand
 phi ty incoming = instr $ Phi ty incoming []
 
+-- Returns the operand.
 ret :: Operand -> Codegen (Named Terminator)
 ret val = terminator $ Do $ Ret (Just val) []
