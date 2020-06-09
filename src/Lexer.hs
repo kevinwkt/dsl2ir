@@ -14,19 +14,22 @@ import qualified Text.Parsec.Token as Tok
 lexer :: Tok.TokenParser ()
 lexer = Tok.makeTokenParser style
   where
+    -- All operations in out language.
     ops = ["+","*","-","/",";","=",",","<",">","|",
           "||", "&&", ":", "==", "!=", ">=", "<="
           ]
+    -- All keywords.
     names = ["_", "__", "___", "____", "_____"
             , "______", "extern", "binary"
             , "unary"
             ]
     style = emptyDef {
-               Tok.commentLine = "#",
+               Tok.commentLine = "#", -- Comments will start with '#'.
                Tok.reservedOpNames = ops,
                Tok.reservedNames = names
             }
 
+-- These are all the lexers that we need for our language.
 integer         = Tok.integer lexer
 float           = Tok.float lexer
 parens          = Tok.parens lexer
@@ -44,11 +47,13 @@ operator = do
   b <- many $ Tok.opLetter emptyDef
   return (a:b)
 
-
+-- Custom lexer for esoteric integers.
 esotericInteger_ l = Tok.lexeme l int3 <?> "integer3"
   where int3 :: (Stream s m Char) => ParsecT s u m Integer
         int3 = number 3 dig3
+        -- This will interpret the number as base tree and transform it.
         number base baseDigit
+        -- Using many1 to ensure that we at least have one base3 digit to continue.
           = do{ digits <- many1 baseDigit
             ; let n = foldl (\x d -> base*x + toInteger (digitToInt d)) 0 digits
             ; seq n (return n)

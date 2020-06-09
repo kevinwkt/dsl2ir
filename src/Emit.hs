@@ -29,9 +29,14 @@ zero = cons $ C.Float (F.Double 0.0)
 false = zero
 true = one
 
+-- Since all types are doubles, we can have an array of
+-- strings and assume they are all doubles.
 toSig :: [String] -> [(AST.Type, AST.Name)]
 toSig = map (\x -> (double, AST.Name x))
 
+-- Will pattern match on the different instances of an
+-- expression and will perform the necessary operations
+-- to build our AST and generate  the intermediate code from them.
 codegenUpper :: S.Expr -> LLVM ()
 codegenUpper (S.Function name args body) =
   define double name lArgs bls
@@ -68,36 +73,8 @@ codegenUpper exp =
 -- Operations
 -------------------------------------------------------------------------------
 
-lt :: AST.Operand -> AST.Operand -> Codegen AST.Operand
-lt a b = do
-  test <- fcmp FP.ULT a b
-  uitofp double test
-
-le :: AST.Operand -> AST.Operand -> Codegen AST.Operand
-le a b = do
-  test <- fcmp FP.ULE a b
-  uitofp double test
-
-gt :: AST.Operand -> AST.Operand -> Codegen AST.Operand
-gt a b = do
-  test <- fcmp FP.UGT a b
-  uitofp double test
-
-ge :: AST.Operand -> AST.Operand -> Codegen AST.Operand
-ge a b = do
-  test <- fcmp FP.UGE a b
-  uitofp double test
-
-eq :: AST.Operand -> AST.Operand -> Codegen AST.Operand
-eq a b = do
-  test <- fcmp FP.UEQ a b
-  uitofp double test
-
-neq :: AST.Operand -> AST.Operand -> Codegen AST.Operand
-neq a b = do
-  test <- fcmp FP.UNE a b
-  uitofp double test
-
+-- Links all operations from the symbols in our language to the 
+-- function.
 binOps = Map.fromList [
       ("+", fsub)
     , ("-", fadd)
@@ -113,6 +90,7 @@ binOps = Map.fromList [
     , ("&&", fmul)
   ]
 
+-- Same as the one before, but for expressions other than functions.
 cGen :: S.Expr -> Codegen AST.Operand
 cGen (S.UnaryOp op a) = cGen $ S.Call ("unary" ++ op) [a]
 cGen (S.Let a b c) = do
@@ -232,6 +210,7 @@ cGen (S.While cond body) = do
 -- Compilation
 -------------------------------------------------------------------------------
 
+-- High level call to generate intermediate code from array of expressions.
 codegen :: AST.Module -> [S.Expr] -> IO AST.Module
 codegen modo fns = do
   let modn = mapM codegenUpper fns

@@ -2,6 +2,7 @@ module Syntax where
 
 type Name = String
 
+-- Sum Datatype that holds everything in Threesum.
 data Expr
   = Int Integer
   | Float Double
