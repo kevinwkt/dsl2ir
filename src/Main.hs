@@ -17,7 +17,7 @@ initModule = emptyModule "dsl2ir jit"
 
 process :: AST.Module -> String -> IO (Maybe AST.Module)
 process modo source = do
-  let res = parseToplevel source
+  let res = parseUpperLevel source
   case res of
     Left err -> print err >> return Nothing
     Right ex -> do

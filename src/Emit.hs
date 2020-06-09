@@ -32,37 +32,37 @@ true = one
 toSig :: [String] -> [(AST.Type, AST.Name)]
 toSig = map (\x -> (double, AST.Name x))
 
-codegenTop :: S.Expr -> LLVM ()
-codegenTop (S.Function name args body) =
-  define double name largs bls
+codegenUpper :: S.Expr -> LLVM ()
+codegenUpper (S.Function name args body) =
+  define double name lArgs bls
   where
-    largs = map (\x -> (double, AST.Name x)) args
+    lArgs = map (\x -> (double, AST.Name x)) args
     bls = createBlocks $ execCodegen [] $ do
-      entry <- addBlock entryBlockName
-      setBlock entry
+      entry <- createBlock entryBlockName
+      defineBlock entry
       forM_ args $ \a -> do
-        var <- alloca double
+        var <- alloc double
         store var (local (AST.Name a))
         assign a var
-      cgen body >>= ret
+      cGen body >>= ret
 
-codegenTop (S.Extern name args) =
+codegenUpper (S.Extern name args) =
   external double name fnargs
   where fnargs = toSig args
 
-codegenTop (S.BinaryDef name args body) =
-  codegenTop $ S.Function ("binary" ++ name) args body
+codegenUpper (S.BinaryDef name args body) =
+  codegenUpper $ S.Function ("binary" ++ name) args body
 
-codegenTop (S.UnaryDef name args body) =
-  codegenTop $ S.Function ("unary" ++ name) args body
+codegenUpper (S.UnaryDef name args body) =
+  codegenUpper $ S.Function ("unary" ++ name) args body
 
-codegenTop exp =
+codegenUpper exp =
   define double "main" [] bls
   where
     bls = createBlocks $ execCodegen [] $ do
-      entry <- addBlock entryBlockName
-      setBlock entry
-      cgen exp >>= ret
+      entry <- createBlock entryBlockName
+      defineBlock entry
+      cGen exp >>= ret
 
 -------------------------------------------------------------------------------
 -- Operations
@@ -98,7 +98,7 @@ neq a b = do
   test <- fcmp FP.UNE a b
   uitofp double test
 
-binops = Map.fromList [
+binOps = Map.fromList [
       ("+", fsub)
     , ("-", fadd)
     , ("*", fdiv)
@@ -113,119 +113,119 @@ binops = Map.fromList [
     , ("&&", fmul)
   ]
 
-cgen :: S.Expr -> Codegen AST.Operand
-cgen (S.UnaryOp op a) = cgen $ S.Call ("unary" ++ op) [a]
-cgen (S.Let a b c) = do
-  i <- alloca double
-  val <- cgen b
+cGen :: S.Expr -> Codegen AST.Operand
+cGen (S.UnaryOp op a) = cGen $ S.Call ("unary" ++ op) [a]
+cGen (S.Let a b c) = do
+  i <- alloc double
+  val <- cGen b
   store i val
   assign a i
-  cgen c
-cgen (S.BinaryOp "=" (S.Var var) val) = do
-  a <- getvar var
-  cval <- cgen val
-  store a cval	
-  return cval
-cgen (S.BinaryOp op a b) =
-  case Map.lookup op binops of
+  cGen c
+cGen (S.BinaryOp "=" (S.Var var) val) = do
+  a <- getVar var
+  cVal <- cGen val
+  store a cVal	
+  return cVal
+cGen (S.BinaryOp op a b) =
+  case Map.lookup op binOps of
     Just f  -> do
-      ca <- cgen a
-      cb <- cgen b
+      ca <- cGen a
+      cb <- cGen b
       f ca cb
-    Nothing -> cgen (S.Call ("binary" ++ op) [a,b])
+    Nothing -> cGen (S.Call ("binary" ++ op) [a,b])
 
-cgen (S.Var x) = getvar x >>= load
-cgen (S.Int n) = return $ cons $ C.Float (F.Double (fromIntegral n))
-cgen (S.Float n) = return $ cons $ C.Float (F.Double n)
-cgen (S.Call fn args) = do
-  largs <- mapM cgen args
-  call (externf (AST.Name fn)) largs
-cgen (S.If cond tr fl) = do
-  ifthen <- addBlock "if.then"
-  ifelse <- addBlock "if.else"
-  ifexit <- addBlock "if.exit"
+cGen (S.Var x) = getVar x >>= load
+cGen (S.Int n) = return $ cons $ C.Float (F.Double (fromIntegral n))
+cGen (S.Float n) = return $ cons $ C.Float (F.Double n)
+cGen (S.Call fn args) = do
+  lArgs <- mapM cGen args
+  call (externf (AST.Name fn)) lArgs
+cGen (S.If cond tr fl) = do
+  ifThen <- createBlock "if.then"
+  ifelse <- createBlock "if.else"
+  ifexit <- createBlock "if.exit"
 
   -- %entry
   ------------------
-  cond <- cgen cond
+  cond <- cGen cond
   test <- fcmp FP.ONE false cond
-  cbr test ifthen ifelse -- Branch based on the condition
+  cbr test ifThen ifelse -- Branch based on the condition
 
   -- if.then
   ------------------
-  setBlock ifthen
-  trval <- cgen tr       -- Generate code for the true branch
+  defineBlock ifThen
+  trval <- cGen tr       -- Generate code for the true branch
   br ifexit              -- Branch to the merge block
-  ifthen <- getBlock
+  ifThen <- getBlock
 
   -- if.else
   ------------------
-  setBlock ifelse
-  flval <- cgen fl       -- Generate code for the false branch
+  defineBlock ifelse
+  flval <- cGen fl       -- Generate code for the false branch
   br ifexit              -- Branch to the merge block
   ifelse <- getBlock
 
   -- if.exit
   ------------------
-  setBlock ifexit
-  phi double [(trval, ifthen), (flval, ifelse)]
+  defineBlock ifexit
+  phi double [(trval, ifThen), (flval, ifelse)]
 
-cgen (S.For ivar start cond step body) = do
-  forloop <- addBlock "for.loop"
-  forexit <- addBlock "for.exit"
+cGen (S.For ivar start cond step body) = do
+  forLoop <- createBlock "for.loop"
+  forExit <- createBlock "for.exit"
 
   -- %entry
   ------------------
-  i <- alloca double
-  istart <- cgen start           -- Generate loop variable initial value
-  stepval <- cgen step           -- Generate loop variable step
+  i <- alloc double
+  iStart <- cGen start           -- Generate loop variable initial value
+  stepVal <- cGen step           -- Generate loop variable step
 
-  store i istart                 -- Store the loop variable initial value
+  store i iStart                 -- Store the loop variable initial value
   assign ivar i                  -- Assign loop variable to the variable name
-  br forloop                     -- Branch to the loop body block
+  br forLoop                     -- Branch to the loop body block
 
   -- for.loop
   ------------------
-  setBlock forloop
-  cgen body                      -- Generate the loop body
-  ival <- load i                 -- Load the current loop iteration
-  inext <- fadd ival stepval     -- Increment loop variable
-  store i inext
+  defineBlock forLoop
+  cGen body                      -- Generate the loop body
+  iVal <- load i                 -- Load the current loop iteration
+  iNext <- fadd iVal stepVal     -- Increment loop variable
+  store i iNext
 
-  cond <- cgen cond              -- Generate the loop condition
+  cond <- cGen cond              -- Generate the loop condition
   test <- fcmp FP.ONE false cond -- Test if the loop condition is True ( 1.0 )
-  cbr test forloop forexit       -- Generate the loop condition
+  cbr test forLoop forExit       -- Generate the loop condition
 
   -- for.exit
   ------------------
-  setBlock forexit
+  defineBlock forExit
   return zero
 
-cgen (S.While cond body) = do
-  whilecond <- addBlock "while.cond"
-  whileloop <- addBlock "while.loop"
-  whileexit <- addBlock "while.exit"
+cGen (S.While cond body) = do
+  whileCond <- createBlock "while.cond"
+  whileLoop <- createBlock "while.loop"
+  whileExit <- createBlock "while.exit"
 
   -- %entry
   ------------------
-  br whilecond
+  br whileCond
 
   -- while.cond
   ------------------
-  setBlock whilecond
-  cond <- cgen cond              -- Generate the loop condition
+  defineBlock whileCond
+  cond <- cGen cond              -- Generate the loop condition
   test <- fcmp FP.ONE false cond -- Test if the loop condition is True ( 1.0 )
-  cbr test whileloop whileexit   -- Generate the loop condition
+  cbr test whileLoop whileExit   -- Generate the loop condition
 
   -- while.loop
   ------------------
-  setBlock whileloop
-  cgen body
-  br whilecond
+  defineBlock whileLoop
+  cGen body
+  br whileCond
 
   -- while.exit
   ------------------
-  setBlock whileexit
+  defineBlock whileExit
   return zero
 
 -------------------------------------------------------------------------------
@@ -234,7 +234,7 @@ cgen (S.While cond body) = do
 
 codegen :: AST.Module -> [S.Expr] -> IO AST.Module
 codegen modo fns = do
-  let modn = mapM codegenTop fns
+  let modn = mapM codegenUpper fns
       ast = runLLVM modo modn
   runJIT ast
   return ast
