@@ -99,7 +99,7 @@ Description
 _Used for creating variables_
 
 Syntax  
-`____ `**`variableName`**
+`____ `**`variableName`** = expr , `variableNmae2` = expr, ...
 
 
 Example
@@ -115,12 +115,12 @@ Description
 _These are two closely related reserved word.  ______ represents the reserved words for ‘if’ and _ represents the reserved words for ‘then’, and ‘else’._
 
 Syntax  
-`_ (`**`condition`**`) _ `**`ifBody`**``  
+`_ (`**`condition`**`) _ `**`ifBody`**` _ `**`elseBody`**`` 
 
 
 Example  
 ```
-_ x < 3 _       # If x is smaller than 3
+______ x < 3 _       # If x is smaller than 3
    10           # Return 2
 _  x;           # Else return x
 ```  
